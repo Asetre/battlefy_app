@@ -19,12 +19,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
+    "server": "babel-node server.js",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "jest-cli": "^22.0.4"
+    "jest-cli": "^20.0.4"
   }
 }
