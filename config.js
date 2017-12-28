@@ -1,5 +1,5 @@
 export const PORT = 3000
-export const apiKey = 'RGAPI-ab19be5b-9421-40ad-926f-01f9957d9ef6'
+export const apiKey = 'RGAPI-8a3c2622-23fc-46e0-93f4-8f680252d482'
 
 //Save champions and spells due to rate limit issues
 export const Spells = {

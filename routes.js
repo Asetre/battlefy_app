@@ -55,8 +55,10 @@ async function getSummonersAcrossRegion(name) {
     let foundSummoners = []
     //check regions for possible summoners
     let region
+    //search through the regions for the summoner
     for(region in Regions) {
         let summoner = await getSummoner(name, Regions[region])
+        //include the region with the summoner
         if(summoner) foundSummoners.push(includeSummonerRegion(summoner, region))
     }
     return foundSummoners
@@ -109,6 +111,7 @@ async function convertGameIdsToMatches(gameIds, region, accountId) {
     //Second call
     await timeout(1000)
 
+    //return data after it has been fetched
     return Promise.all(apiRequests)
     .then(data => {
         return data
@@ -188,7 +191,9 @@ router.get('/matchlist', async (req, res) => {
     let accountId = req.query.accountId
     let region = Regions[req.query.region]
 
+    //retrieve the summoners match history as ids
     let gameHistoryIds = await getSummonerMatchHistoryIds(accountId, region)
+    //convert each id into match data
     let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
     return res.send(matchHistory)
 })

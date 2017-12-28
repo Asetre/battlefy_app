@@ -8,11 +8,6 @@ class Match extends React.Component {
         super(props)
         let participant = props.match.participants.find(part => part.participantId === props.participantId)
         let gameLength = parseMs(props.match.gameDuration)
-        console.log(props.match.gameDuration)
-        /*
-        let spell1 = await this.getSpell(participant.spell1Id)
-        let spell2 = await this.getSpell(participant.spell2Id)
-        */
 
         this.state = {
             participant: participant,
@@ -20,10 +15,9 @@ class Match extends React.Component {
             gameLength: gameLength,
             champion: participant.championId,
             spell1: participant.spell1Id,
-            spel2: participant.spell2Id,
+            spell2: participant.spell2Id,
             items: []
         }
-
         this.getSpell = this.getSpell.bind(this)
         this.getChampion = this.getChampion.bind(this)
         this.getAllSpells = this.getAllSpells.bind(this)
@@ -67,6 +61,7 @@ class Match extends React.Component {
         let stats = participant.stats
         let spell1 = this.state.spell1
         let spell2 = this.state.spell2
+
         return(
             <div className="Match">
                 <div className="info-container">
@@ -77,45 +72,38 @@ class Match extends React.Component {
                         <h2>Win</h2>
                         : <h2>Lose</h2>
                     }
+                </div>
 
+                <div className="info-container">
+                    <h2>{champion}</h2>
+                    <h2>{spell1}</h2>
+                    <h2>{spell2}</h2>
                 </div>
                 <div className="info-container">
-                    {champion ?
-                        <h2>{champion.name}</h2>
-                        : <h2>Loading</h2>}
-                        {spell1 ?
-                            <h2>{spell1.name}</h2>
-                            : <h2>Loading</h2>}
-                            {spell2 ?
-                                <h2>{spell2.name}</h2>
-                                : <h2>Loading</h2>}
-                            </div>
-                            <div className="info-container">
-                                <h2>{stats.kills}</h2>
-                                <h2>{stats.deaths}</h2>
-                                <h2>{stats.assists}</h2>
-                            </div>
-                            <div className="info-container">
-                                <h2>{`Level ${stats.champLevel}`}</h2>
-                                <h2>{`${stats.totalMinionsKilled}`}</h2>
-                                <h2>{/* can't get game length cs/mins cs/0*/}</h2>
-                            </div>
-                            <div className="info-container"></div>
-                        </div>
-                    )
-                }
-            }
+                    <h2>{stats.kills}</h2>
+                    <h2>{stats.deaths}</h2>
+                    <h2>{stats.assists}</h2>
+                </div>
+                <div className="info-container">
+                    <h2>{`Level ${stats.champLevel}`}</h2>
+                    <h2>{`${stats.totalMinionsKilled}`}</h2>
+                    <h2>{/* can't get game length cs/mins cs/0*/}</h2>
+                </div>
+                <div className="info-container"></div>
+            </div>
+        )
+    }
+}
 
-            function mapStateToProps(state) {
-                return {
-                    summoner: state.summoner
-                }
-            }
+function mapStateToProps(state) {
+    return {
+        summoner: state.summoner
+    }
+}
 
-            function mapDispatchToProps(dispatch) {
-                return {
+function mapDispatchToProps(dispatch) {
+    return {
+    }
+}
 
-                }
-            }
-
-            export default connect(mapStateToProps, mapDispatchToProps)(Match)
+export default connect(mapStateToProps, mapDispatchToProps)(Match)
