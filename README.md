@@ -22,6 +22,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
  - query-string
  - parse-ms
  - react-router-dom
+ 
 **Dev**
  - babel-cli
  - babel-preset-env
