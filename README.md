@@ -19,6 +19,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
 ```
 
 1. **First User Searches for a summoner**
+
     **1.1** We make a request to this route with the `name` as a query string
 
     ```javascript
@@ -68,6 +69,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
     ```
 
 2. **Select Summoner and Render match history**
+
     **2.1** After the user has selected the summoner they would like to view, we send a request to this route with the `accountId region` as query strings.
 
     ```javascript
