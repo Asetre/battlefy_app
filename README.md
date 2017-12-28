@@ -517,8 +517,10 @@ class Match extends React.Component {
     export default connect(mapStateToProps, mapDispatchToProps)(Match)
 ```
 
+
     **LoadingScreen**
-    ```jsx
+
+```jsx
     import React from 'react'
 
     export default function LoadingScreen(props) {
@@ -529,7 +531,7 @@ class Match extends React.Component {
             </div>
             )
         }
-        ```
+```
 
 ## Folder Structure
 ```
