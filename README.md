@@ -5,9 +5,9 @@ You can find the most recent version of this guide [here](https://github.com/fac
 
 ## Table of Contents
 
-- [Application](#Application)
-- [React Components](#React-Components)
-- [Folder Structure](#Folder-Structure)
+- [Application](#application)
+- [React Components](#react-components)
+- [Folder Structure](#folder-structure)
 
 ## Application
     **The config file contains the api key, and port**
@@ -515,7 +515,7 @@ class Match extends React.Component {
     }
 
     export default connect(mapStateToProps, mapDispatchToProps)(Match)
-    ```
+```
 
     **LoadingScreen**
     ```jsx
