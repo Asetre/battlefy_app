@@ -11,16 +11,15 @@ You can find the most recent version of this guide [here](https://github.com/fac
 
 ## Application
 
-
-    **The config file contains the api key, and port**
-    ```javascript
+**The config.js file contains the api key and port**
+```javascript
     //config.js
     export const PORT = 3000
-    export const apiKey = 'RGAPI-8a3c2622-23fc-46e0-93f4-8f680252d482'
-    ```
+    export const apiKey = 'RGAPI-8a3c2622-23fc-46e0-93f4-8f680******'
+```
 
-    1. **First User Searches for a summoner**
-    We make a request to this route with the `summoner name` as a query string
+1. **First User Searches for a summoner**
+    **1.1** We make a request to this route with the `name` as a query string
 
     ```javascript
     router.get('/summoner', async (req, res) => {
@@ -30,7 +29,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
     })
     ```
 
-    The router calls this function finding the possible summoners by region
+    **1.2** The router calls this function finding the possible summoners by region
 
     ```javascript
     async function getSummonersAcrossRegion(name) {
@@ -45,6 +44,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
 
     }
     ```
+
     Which in turn calls:
 
     ```javascript
@@ -67,11 +67,10 @@ You can find the most recent version of this guide [here](https://github.com/fac
     }
     ```
 
-    2. **Select Summoner and Render match history**
+2. **Select Summoner and Render match history**
+    **2.1** After the user has selected the summoner they would like to view, we send a request to this route with the `accountId region` as query strings.
 
-        After the user has selected the summoner they would like to view, we send a request to this route with the `accountId region` as query strings.
-
-        ```javascript
+    ```javascript
         router.get('/matchlist', async (req, res) => {
             let accountId = req.query.accountId
             let region = Regions[req.query.region]
@@ -80,11 +79,11 @@ You can find the most recent version of this guide [here](https://github.com/fac
             let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
             return res.send(matchHistory)
         })
-        ```
+    ```
 
-        First we get the summoners match history as ids
+    **2.2** First we get the summoners match history as ids
 
-        ```javascript
+    ```javascript
         function getSummonerMatchHistoryIds(accountId, region) {
             let url = `https://${region}.${Uri}/lol/match/v3/matchlists/by-account/${accountId}/recent`
             let options = {
@@ -103,11 +102,11 @@ You can find the most recent version of this guide [here](https://github.com/fac
                 }, [])
             })
         }
-        ```
+    ```
 
-        Then we convert the game ids to matches by making two batch requests of 10
+    **2.3** Then we convert the game ids to matches by making two batch requests of 10
 
-        ```javascript
+    ```javascript
         async function convertGameIdsToMatches(gameIds, region, accountId) {
             let apiRequests = []
             //Due to rate limit split array into two, and make a delayed request
@@ -140,10 +139,11 @@ You can find the most recent version of this guide [here](https://github.com/fac
                 return data
             })
         }
-        ```
+    ```
 
-        In this block we map the data of match histories to include `champion spells items`
-        ```javascript
+    **2.3** (Not implemented) In this block we map the data of match histories to include `champion spells items`
+
+    ```javascript
 
         //function convertGameIdsToMatches
         return Promise.all(apiRequests)
@@ -171,7 +171,12 @@ You can find the most recent version of this guide [here](https://github.com/fac
 
             return match
         }
-        ```
+    ```
+
+
+
+
+
 ## React Components
 
 
