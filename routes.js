@@ -2,6 +2,7 @@ import {apiKey} from './config'
 import rp from 'request-promise-native'
 import express from 'express'
 import path from 'path'
+import {Spells, Champions} from './config'
 
 const router = express.Router()
 
@@ -81,7 +82,7 @@ function getSummonerMatchHistoryIds(accountId, region) {
     })
 }
 
-async function convertGameIdsToMatches(gameIds, region) {
+async function convertGameIdsToMatches(gameIds, region, accountId) {
     let apiRequests = []
     //Due to rate limit split array into two, and make a delayed request
     let middle = Math.floor(gameIds.length / 2)
@@ -109,7 +110,9 @@ async function convertGameIdsToMatches(gameIds, region) {
     await timeout(1000)
 
     return Promise.all(apiRequests)
-    .then(data => data)
+    .then(data => {
+        return data
+    })
 }
 
 function getMatch(gameId, region) {
@@ -123,14 +126,62 @@ function getMatch(gameId, region) {
     }
     return rp(options)
 }
+
+function findSpellById(id) {
+    let spellToReturn
+    let spell
+    for(spell in Spells) {
+        if(Spells[spell].id == id) {
+            spellToReturn = Spells[spell]
+            break
+        }
+    }
+    return spellToReturn
+}
+
+function findChampionById(id) {
+    let champToReturn
+    let champ
+    for(champ in Champions) {
+        if(Champions[champ].id == id) {
+            champToReturn = Champions[champ]
+            break
+        }
+    }
+    return champToReturn
+}
+
+function convertMatchData(match, accountId) {
+    /*
+    participant.spell1 = findSpellById(participant.spell1Id)
+    participant.spell2 = findSpellById(participant.spell2Id)
+    participant.champion = findChampionById(participant.championId)
+
+    let copy = JSON.stringify(match)
+    console.log(copy.participants[participantId])
+    return copy
+    */
+    let participantId = findParticipantId(match.participantIdentities, accountId)
+    let participant = match.participants[participantId]
+
+    participant.spell1 = findSpellById(participant.spell1Id)
+    participant.spell2 = findSpellById(participant.spell2Id)
+    participant.champion = findChampionById(participant.championId)
+
+    return match
+}
+
+function findParticipantId(participantIdentities, accountId) {
+    return participantIdentities.find(part => part.player.accountId == accountId).participantId
+}
 /*--------------------------------
-    Routes
+Routes
 --------------------------------*/
 
 router.get('/summoner', async (req, res) => {
     let summonerName = req.query.name
     let summonersFound = await getSummonersAcrossRegion(summonerName)
-    res.send(JSON.stringify(summonersFound))
+    return res.send(JSON.stringify(summonersFound))
 })
 
 router.get('/matchlist', async (req, res) => {
@@ -138,12 +189,21 @@ router.get('/matchlist', async (req, res) => {
     let region = Regions[req.query.region]
 
     let gameHistoryIds = await getSummonerMatchHistoryIds(accountId, region)
-    let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region)
-    console.log(matchHistory)
+    let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
+    return res.send(matchHistory)
+})
+
+router.get('/spell', (req, res) => {
+    let spellId = req.query.spellId
+    return res.send(findSpellById(spellId))
+})
+
+router.get('/champion', (req, res) => {
+    let championId = req.query.championId
+    return res.send(findChampionById(championId))
 })
 
 //React app
-//NOTEchange to build directory
 router.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'src'))
+    res.sendFile(path.join(__dirname, 'build', 'index.html'))
 })

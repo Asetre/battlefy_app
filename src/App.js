@@ -1,19 +1,31 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import {
+    BrowserRouter as Router,
+    Route
+} from 'react-router-dom'
 import './App.css';
+
+import {Provider} from 'react-redux'
+import store from './store'
+
+//Components
+import Home from './components/home'
+import SummonerList from './components/summoner_list'
+import MatchList from './components/match_list'
 
 class App extends Component {
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
+        <Provider store={store}>
+            <Router>
+                <div className="App">
+                    <h1>LoL Match history App</h1>
+                    <Route exact path="/" render={props => <Home {...props}/>} />
+                    <Route exact path="/summoner-list" render={props => <SummonerList {...props}/>} />
+                    <Route exact path="/matchlist" component={MatchList}/>
+                </div>
+            </Router>
+        </Provider>
     );
   }
 }

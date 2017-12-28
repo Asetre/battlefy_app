@@ -26,3 +26,17 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+
+/* ------------------------------------
+Match Component
+------------------------------------ */
+.Match {
+    display: flex;
+}
+
+.info-container {
+    flex-grow: 1;
+    padding: 50px;
+    height: 170px;
+}

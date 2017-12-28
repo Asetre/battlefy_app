@@ -6,8 +6,6 @@ import path from 'path'
 
 //Static folder
 app.use(express.static(path.join(__dirname, 'build')))
-//Temporary static folder for dev
-app.use(express.static(path.join(__dirname, 'src')))
 
 //Routes
 app.use(router)
