@@ -10,7 +10,9 @@ You can find the most recent version of this guide [here](https://github.com/fac
 - [Folder Structure](#folder-structure)
 
 ## Application
+
     **The config file contains the api key, and port**
+    
     ```javascript
     //config.js
     export const PORT = 3000
