@@ -6,8 +6,8 @@ You can find the most recent version of this guide [here](https://github.com/fac
 ## Table of Contents
 
 - [Application](#Application)
-- [React Components](#React Components)
-- [Folder Structure](#Folder Structure)
+- [React Components](#React-Components)
+- [Folder Structure](#Folder-Structure)
 
 ## Application
     **The config file contains the api key, and port**
