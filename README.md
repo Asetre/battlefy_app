@@ -9,6 +9,25 @@ You can find the most recent version of this guide [here](https://github.com/fac
 - [React Components](#react-components)
 - [Folder Structure](#folder-structure)
 
+## Dependencies
+
+**App**
+ - request
+ - request-promise-native
+ - express
+ - mongoose
+ - redux
+ - react-redux
+ - axios
+ - query-string
+ - parse-ms
+ - react-router-dom
+**Dev**
+ - babel-cli
+ - babel-preset-env
+ - jest-cli@20
+ - babel-plugin-transform-object-rest-spread
+
 ## Application
 
 **The config.js file contains the api key and port**
