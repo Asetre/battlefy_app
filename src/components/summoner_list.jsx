@@ -13,17 +13,20 @@ function SummonerList(props) {
     }
 
     return(
-        <ul>
-            {props.foundSummoners.map(summoner => {
-                return(
-                    <li>
-                        <Link to={`/matchlist?accountId=${summoner.accountId}&region=${summoner.region}`} onClick={() => handleChooseSummoner(summoner)}>
-                            <Summoner {...summoner}/>
-                        </Link>
-                    </li>
-                )
-            })}
-        </ul>
+        <div className="Summoner-list">
+            <button>New Search</button>
+            <ul>
+                {props.foundSummoners.map(summoner => {
+                    return(
+                        <li>
+                            <Link to={`/matchlist?accountId=${summoner.accountId}&region=${summoner.region}`} onClick={() => handleChooseSummoner(summoner)}>
+                                <Summoner {...summoner}/>
+                            </Link>
+                        </li>
+                    )
+                })}
+            </ul>
+        </div>
     )
 }
 

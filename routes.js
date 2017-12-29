@@ -2,26 +2,12 @@ import {apiKey} from './config'
 import rp from 'request-promise-native'
 import express from 'express'
 import path from 'path'
-import {Spells, Champions} from './config'
+import {Regions, Uri} from './config'
+import Spells from './spells'
+import Champions from './champions'
+import Items from './items'
 
 const router = express.Router()
-
-export default router
-
-/*--------------------------------
-    Config
---------------------------------*/
-const Regions = {
-    BR: 'br1',
-    EUNE: 'eun1',
-    EUW: 'euw1',
-    JP: 'jp1',
-    KR: 'kr',
-    NA: 'na1',
-    RU: 'ru'
-}
-
-const Uri = 'api.riotgames.com'
 
 /*--------------------------------
     Functions
@@ -114,7 +100,10 @@ async function convertGameIdsToMatches(gameIds, region, accountId) {
     //return data after it has been fetched
     return Promise.all(apiRequests)
     .then(data => {
-        return data
+        //Convert the matches to include spells, items and champion
+        return data.map(match => {
+            return convertMatchData(match, accountId)
+        })
     })
 }
 
@@ -131,62 +120,57 @@ function getMatch(gameId, region) {
 }
 
 function findSpellById(id) {
-    let spellToReturn
     let spell
     for(spell in Spells) {
-        if(Spells[spell].id == id) {
-            spellToReturn = Spells[spell]
-            break
-        }
+        if(Spells[spell].id == id) return Spells[spell]
     }
-    return spellToReturn
 }
 
 function findChampionById(id) {
-    let champToReturn
     let champ
     for(champ in Champions) {
         if(Champions[champ].id == id) {
-            champToReturn = Champions[champ]
-            break
+            return Champions[champ]
         }
     }
-    return champToReturn
 }
 
+function findParticipantItems(stats) {
+    //Filter stats keys to only items ~> convert item ids to items
+    return Object.keys(stats).filter(key => key.match(/item[0-7]/g)).map(key => {
+        let itemId = stats[key]
+        return Items[itemId]
+    })
+}
+
+
 function convertMatchData(match, accountId) {
-    /*
-    participant.spell1 = findSpellById(participant.spell1Id)
-    participant.spell2 = findSpellById(participant.spell2Id)
-    participant.champion = findChampionById(participant.championId)
-
-    let copy = JSON.stringify(match)
-    console.log(copy.participants[participantId])
-    return copy
-    */
     let participantId = findParticipantId(match.participantIdentities, accountId)
-    let participant = match.participants[participantId]
+    let participant = match.participants[participantId -1]
 
+    participant.champion = findChampionById(participant.championId)
     participant.spell1 = findSpellById(participant.spell1Id)
     participant.spell2 = findSpellById(participant.spell2Id)
-    participant.champion = findChampionById(participant.championId)
+    participant.items = findParticipantItems(participant.stats)
 
     return match
 }
 
 function findParticipantId(participantIdentities, accountId) {
-    return participantIdentities.find(part => part.player.accountId == accountId).participantId
+    return participantIdentities.find(participant => participant.player.accountId == accountId).participantId
 }
 /*--------------------------------
 Routes
 --------------------------------*/
 
+//Find summoner across regions
 router.get('/summoner', async (req, res) => {
     let summonerName = req.query.name
     let summonersFound = await getSummonersAcrossRegion(summonerName)
     return res.send(JSON.stringify(summonersFound))
 })
 
+//Find summoner match history
 router.get('/matchlist', async (req, res) => {
     let accountId = req.query.accountId
     let region = Regions[req.query.region]
@@ -198,17 +182,9 @@ router.get('/matchlist', async (req, res) => {
     return res.send(matchHistory)
 })
 
-router.get('/spell', (req, res) => {
-    let spellId = req.query.spellId
-    return res.send(findSpellById(spellId))
-})
-
-router.get('/champion', (req, res) => {
-    let championId = req.query.championId
-    return res.send(findChampionById(championId))
-})
-
 //React app
 router.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'))
 })
+
+export default router

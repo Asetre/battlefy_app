@@ -19,7 +19,6 @@ class App extends Component {
         <Provider store={store}>
             <Router>
                 <div className="App">
-                    <h1>LoL Match history App</h1>
                     <Route exact path="/" render={props => <Home {...props}/>} />
                     <Route exact path="/summoner-list" render={props => <SummonerList {...props}/>} />
                     <Route exact path="/matchlist" component={MatchList}/>
