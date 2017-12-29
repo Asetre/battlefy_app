@@ -10,6 +10,17 @@ app.use(express.static(path.join(__dirname, 'build')))
 //Routes
 app.use(router)
 
-app.listen(PORT, () => {
-    console.log(`App is listening on port: ${PORT}`)
-})
+
+var server
+export default function runServer() {
+    server = app.listen(PORT, () => {
+        console.log(`App is listening on port: ${PORT}`)
+    })
+}
+
+export function closeServer() {
+    server.close()
+}
+
+//Runs server
+if(require.main === module) runServer()
