@@ -23,6 +23,9 @@ class MatchList extends React.Component {
                 this.props.updateSummoner(res.data)
             })
             .then(() => {
+                return new Promise(resolve => setTimeout(resolve, 1400))
+            })
+            .then(() => {
                 this.getMatchHistory()
             })
         }else this.getMatchHistory()

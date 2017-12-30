@@ -1,6 +1,15 @@
 import rp from 'request-promise-native'
 import runServer, {closeServer} from '../../server'
 
+function findSummonerByName(summonerName) {
+    let options = {
+        uri: `http://localhost:3000/summoner?name=${summonerName}`,
+        json: true
+    }
+
+    return rp(options)
+}
+
 describe('Route tests', () => {
     beforeAll(() => {
         runServer()
@@ -11,15 +20,8 @@ describe('Route tests', () => {
 
     it('Finds Summoners across regions', () => {
         let summonerName = 'BFY Meowington'
-        let options = {
-            uri: `http://localhost:3000/summoner?name=${summonerName}`,
-            json: true
-        }
-
-        return rp(options)
-        .then(res => {
-            expect(res).toMatchSnapshot()
-        })
+        return findSummonerByName(summonerName)
+        .then(res => expect(res).toMatchSnapshot())
     })
 
     it('Gets summoner match history', () => {
@@ -37,4 +39,19 @@ describe('Route tests', () => {
         })
     })
 
+    it('Should throw an error finding the summoner', () => {
+        let summonerName = 'BFY Meowington'
+        let apiRequests = []
+        for(let i=0; i<30; i++) {
+            apiRequests.push(findSummonerByName(summonerName))
+        }
+
+        Promise.all(apiRequests)
+        .then(data => {
+            if(data) throw new Error()
+        })
+        .catch(err => {
+            expect(err).toMatchSnapshot()
+        })
+    })
 })
