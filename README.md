@@ -679,3 +679,8 @@ my-app/
       summoner.jsx
 
 ```
+
+# Todo
+
+- include continuous integration testing with travis-ci
+- add end to end testing
