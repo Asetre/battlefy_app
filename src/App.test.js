@@ -6,3 +6,6 @@ it('renders without crashing', () => {
   const div = document.createElement('div');
   ReactDOM.render(<App />, div);
 });
+
+it('Is able to search for summoner by name', () => {
+})

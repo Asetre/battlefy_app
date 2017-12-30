@@ -10,6 +10,27 @@ import Items from './items'
 const router = express.Router()
 
 /*--------------------------------
+    Custom Errors
+--------------------------------*/
+class SummonerError extends Error {
+    constructor(msg) {
+        super()
+        this.message = msg
+        this.name = 'Summoner Error'
+        this.status_code = 503
+    }
+}
+
+class MatchError extends Error {
+    constructor(msg) {
+        super()
+        this.message = msg
+        this.name = 'Match Error'
+        this.status_code = 503
+    }
+}
+
+/*--------------------------------
     Functions
 --------------------------------*/
 function includeSummonerRegion(summoner, region) {
@@ -33,7 +54,7 @@ function getSummoner(name, region) {
         //If user was not found return null
         if(err.statusCode === 404) return null
         //If error is not user was not found in region throw the error
-        throw err
+        throw new SummonerError('There was a problem fetching data from the api')
     })
 }
 
@@ -68,6 +89,9 @@ function getSummonerMatchHistoryIds(accountId, region) {
         return acc
         }, [])
     })
+    .catch(err => {
+        throw new MatchError('Failed to get match history Ids from api')
+    })
 }
 
 async function convertGameIdsToMatches(gameIds, region, accountId) {
@@ -100,6 +124,8 @@ async function convertGameIdsToMatches(gameIds, region, accountId) {
     //return data after it has been fetched
     return Promise.all(apiRequests)
     .then(data => {
+        //If match history array is empty throw an error
+        if(data.length === 0) throw new MatchError('No match history found')
         //Convert the matches to include spells, items and champion
         return data.map(match => {
             return convertMatchData(match, accountId)
@@ -117,6 +143,9 @@ function getMatch(gameId, region) {
         json: true
     }
     return rp(options)
+    .catch(err => {
+        throw new MatchError('Failed to get match data')
+    })
 }
 
 function findSpellById(id) {
@@ -165,21 +194,39 @@ Routes
 
 //Find summoner across regions
 router.get('/summoner', async (req, res) => {
-    let summonerName = req.query.name
-    let summonersFound = await getSummonersAcrossRegion(summonerName)
-    return res.send(JSON.stringify(summonersFound))
+    try {
+        let summonerName = req.query.name
+        let summonersFound = await getSummonersAcrossRegion(summonerName)
+        return res.send(JSON.stringify(summonersFound))
+    }catch(err) {
+        //If error was a SummonerError
+        if(err.name === 'Summoner Error') {
+            return res.status(err.status_code).send(err)
+        }
+        //Server error
+        return res.status(500).send('Internal Server Error')
+    }
 })
 
 //Find summoner match history
 router.get('/matchlist', async (req, res) => {
-    let accountId = req.query.accountId
-    let region = Regions[req.query.region]
+    try {
+        let accountId = req.query.accountId
+        let region = Regions[req.query.region]
 
-    //retrieve the summoners match history as ids
-    let gameHistoryIds = await getSummonerMatchHistoryIds(accountId, region)
-    //convert each id into match data
-    let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
-    return res.send(matchHistory)
+        //retrieve the summoners match history as ids
+        let gameHistoryIds = await getSummonerMatchHistoryIds(accountId, region)
+        //convert each id into match data
+        let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
+        return res.send(matchHistory)
+    }catch(err) {
+        //If error was a Matcherror
+        if(err.name == 'Match Error') {
+            return res.status(err.status_code).send(err)
+        }
+        //Server error
+        return res.status(500).send('Internal Server Error')
+    }
 })
 
 //React app
