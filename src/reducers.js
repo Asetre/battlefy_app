@@ -25,6 +25,9 @@ export default function matchApp(state=initialState, action) {
         case actions.change_matchHistory:
         return {...state, matchHistory: payload}
 
+        case actions.change_errorMsg:
+        return {...state, errorMsg: payload}
+
         default:
         return state
     }

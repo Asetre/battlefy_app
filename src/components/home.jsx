@@ -26,7 +26,13 @@ class Home extends React.Component {
             props.history.push('/summoner-list')
         })
         .catch(err => {
-            console.log(err)
+            //if error fetching data from api
+            if(err.name === 'Summoner Error') {
+                props.updateErrorMsg(err.message)
+            }else {
+                props.updateErrorMsg('Something went wrong')
+            }
+            return props.history.push('/error')
         })
     }
 
@@ -65,6 +71,9 @@ function mapDispatchToProps(dispatch) {
         },
         updateFoundSummoners: data => {
             dispatch(actions.updateFoundSummoners(data))
+        },
+        updateErrorMsg: data => {
+            dispatch(actions.updateErrorMsg(data))
         }
     }
 }

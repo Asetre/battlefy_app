@@ -15,12 +15,22 @@ class MatchList extends React.Component {
     }
     componentWillMount() {
         //check if summoner was already found if not search for summoner with accountId
-        this.getMatchHistory()
+        if(!this.props.summoner) {
+            let parsed = queryString.parse(this.props.location.search)
+            let url = `/account?accountId=${parsed.accountId}&region=${parsed.region}`
+            return axios.get(url)
+            .then(res => {
+                this.props.updateSummoner(res.data)
+            })
+            .then(() => {
+                this.getMatchHistory()
+            })
+        }else this.getMatchHistory()
     }
 
     render() {
         let props = this.props
-        if(props.loading || !props.matchHistory) {
+        if(props.loading || !props.matchHistory || !props.summoner) {
             return (
                 <LoadingScreen msg={props.loadingMsg} />
             )
@@ -42,6 +52,8 @@ class MatchList extends React.Component {
                 </ul>
             </div>
         )
+    }
+    getSummoner(accountId) {
     }
 
     getMatchHistory() {
@@ -66,7 +78,6 @@ class MatchList extends React.Component {
                 break
             }
         }
-        //If participantId is not found throw an error
         return participantId
     }
 }
@@ -87,6 +98,9 @@ function mapDispatchToProps(dispatch) {
         },
         updateMatchHistory: data => {
             dispatch(actions.updateMatchHistory(data))
+        },
+        updateSummoner: data => {
+            dispatch(actions.updateSummoner(data))
         }
     }
 }

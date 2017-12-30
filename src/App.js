@@ -12,6 +12,7 @@ import store from './store'
 import Home from './components/home'
 import SummonerList from './components/summoner_list'
 import MatchList from './components/match_list'
+import ErrorScreen from './components/error_screen'
 
 class App extends Component {
   render() {
@@ -22,6 +23,7 @@ class App extends Component {
                     <Route exact path="/" render={props => <Home {...props}/>} />
                     <Route exact path="/summoner-list" render={props => <SummonerList {...props}/>} />
                     <Route exact path="/matchlist" component={MatchList}/>
+                    <Route exact path="/error" render={props => <ErrorScreen {...props}/>} />
                 </div>
             </Router>
         </Provider>

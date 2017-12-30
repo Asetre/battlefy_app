@@ -144,7 +144,7 @@ function getMatch(gameId, region) {
     }
     return rp(options)
     .catch(err => {
-        throw new MatchError('Failed to get match data')
+        //Not sure why we are getting a 429 error
     })
 }
 
@@ -227,6 +227,33 @@ router.get('/matchlist', async (req, res) => {
         //Server error
         return res.status(500).send('Internal Server Error')
     }
+})
+
+router.get('/account', async (req, res) => {
+    let accountId = req.query.accountId
+    let region = req.query.region
+    let url = `https://${Regions[region]}.${Uri}/lol/summoner/v3/summoners/by-account/${accountId}`
+    let options = {
+        uri: url,
+        qs: {
+            api_key: apiKey
+        },
+        json: true
+    }
+
+    await rp(options)
+    .then(data => {
+        return res.send(includeSummonerRegion(data))
+    })
+    .catch(err => {
+        throw new SummonerError('Failed to get summoner')
+    })
+    .catch(err => {
+        //If SummonerError
+        if(err.name === 'Summoner Error') return res.status(err.status_code).send(err)
+        //Server error
+        return res.status(500).send('Internal server error')
+    })
 })
 
 //React app

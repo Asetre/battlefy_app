@@ -1,20 +1,24 @@
 import React from 'react'
 import {connect} from 'react-redux'
+import {Link} from 'react-router-dom'
 
-default function ErrorScreen(props) {
+function ErrorScreen(props) {
     return(
-        <h1>Error screen</h1>
+        <div className="ErrorScreen">
+            <Link to="/">Go back to safety</Link>
+            <h2>{props.errorMsg}</h2>
+        </div>
     )
 }
 
 function mapStateToProps(state) {
     return {
+        errorMsg: state.errorMsg
     }
 }
 
 function mapDispatchToProps(dispatch) {
     return {
-
     }
 }
 

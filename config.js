@@ -1,5 +1,5 @@
 export const PORT = 3000
-export const apiKey = 'RGAPI-af044778-baf0-417f-8f20-7de64e5e43c1'
+export const apiKey = 'RGAPI-b210e0cc-537e-4739-b999-a7ba9fc90d09'
 export const Regions = {
     BR: 'br1',
     EUNE: 'eun1',

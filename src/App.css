@@ -18,6 +18,12 @@ a:visited {
     text-decoration: none;
 }
 /* ------------------------------------
+Error Screen Component
+------------------------------------ */
+.ErrorScreen {
+    color: white;
+}
+/* ------------------------------------
 Loading Screen Component
 ------------------------------------ */
 .Loading {
