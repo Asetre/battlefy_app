@@ -7,7 +7,9 @@ You can find the most recent version of this guide [here](https://github.com/fac
 
 - [Application](#application)
 - [React Components](#react-components)
+- [Custom Errors](#custom-errors)
 - [Folder Structure](#folder-structure)
+- [Todo](#todo)
 
 ## Dependencies
 
@@ -32,6 +34,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
 Application
 =====
 
+
 ### Configuration
 ---
 
@@ -44,6 +47,36 @@ The config.js files contains the api_key and port.
 export const PORT = 3000
 export var apiKey = 'RGAPI-b210e0cc-537e-4739-b999-a7ba9fc90d09'
 
+```
+
+### Custom Errors
+
+
+Here we have throw errors regarding api requests to the rio api
+
+**Summoner Request Errors**
+```javascript
+class SummonerError extends Error {
+    constructor(msg) {
+        super()
+        this.message = msg
+        this.name = 'Summoner Error'
+        this.status_code = 503
+    }
+}
+```
+
+**Match Request Errors**
+`Match Error`
+```javascript
+class MatchError extends Error {
+    constructor(msg) {
+        super()
+        this.message = msg
+        this.name = 'Match Error'
+        this.status_code = 503
+    }
+}
 ```
 
 ### Routes
