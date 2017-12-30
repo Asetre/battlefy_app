@@ -22,178 +22,213 @@ You can find the most recent version of this guide [here](https://github.com/fac
  - query-string
  - parse-ms
  - react-router-dom
- 
+
 **Dev**
  - babel-cli
  - babel-preset-env
  - jest-cli@20
  - babel-plugin-transform-object-rest-spread
 
-## Application
+Application
+=====
 
-**The config.js file contains the api key and port**
+### Configuration
+---
+
+
+
+The config.js files contains the api_key and port.
+
 ```javascript
-    //config.js
-    export const PORT = 3000
-    export const apiKey = 'RGAPI-8a3c2622-23fc-46e0-93f4-8f680******'
+//config.js
+export const PORT = 3000
+export var apiKey = 'RGAPI-b210e0cc-537e-4739-b999-a7ba9fc90d09'
+
 ```
 
-1. **First User Searches for a summoner**
+### Routes
+---
 
-    **1.1** We make a request to this route with the `name` as a query string
+#### `/summoner?name=name`
+---
 
-    ```javascript
-    router.get('/summoner', async (req, res) => {
+
+Here we make a query for the summoner across the regions. If there was an error fetching the api we throw a `SummonerError`.
+
+```javascript
+//Find summoner across regions
+router.get('/summoner', async (req, res) => {
+    try {
         let summonerName = req.query.name
         let summonersFound = await getSummonersAcrossRegion(summonerName)
         return res.send(JSON.stringify(summonersFound))
+    }catch(err) {
+        //If error was a SummonerError
+        if(err.name === 'Summoner Error') {
+            return res.status(err.status_code).send(err)
+        }
+        //Server error
+        return res.status(500).send('Internal Server Error')
+    }
+})
+
+async function getSummonersAcrossRegion(name) {
+    let foundSummoners = []
+    //check regions for possible summoners
+    let region
+    //search through the regions for the summoner
+    for(region in Regions) {
+        let summoner = await getSummoner(name, Regions[region])
+        //include the region with the summoner
+        if(summoner) foundSummoners.push(includeSummonerRegion(summoner, region))
+    }
+    return foundSummoners
+
+}
+
+function getSummoner(name, region) {
+    let url = `https://${region}.${Uri}/lol/summoner/v3/summoners/by-name/${name}`
+    let options = {
+        uri: url,
+        qs: {
+            api_key: apiKey
+        },
+        json: true
+    }
+    return rp(options)
+    .catch(err => {
+        //If user was not found return null
+        if(err.statusCode === 404) return null
+        //If error is not user was not found in region throw the error
+        throw new SummonerError('There was a problem fetching data from the api')
     })
-    ```
+}
+```
 
-    **1.2** The router calls this function finding the possible summoners by region
+#### `/matchlist?accountId=id&region=region`
+---
 
-    ```javascript
-    async function getSummonersAcrossRegion(name) {
-        let foundSummoners = []
-        //check regions for possible summoners
-        let region
-        for(region in Regions) {
-            let summoner = await getSummoner(name, Regions[region])
-            if(summoner) foundSummoners.push(includeSummonerRegion(summoner, region))
+Here we:
+
+1. First get the summoners recent  match history as an array of Ids
+2. Then we take each game Id and make a request to the riot api
+3. Find the participant Id
+4. get the participant spells, items, champion
+
+
+```javascript
+router.get('/matchlist', async (req, res) => {
+    try {
+        let accountId = req.query.accountId
+        let region = Regions[req.query.region]
+
+        //retrieve the summoners match history as ids
+        let gameHistoryIds = await getSummonerMatchHistoryIds(accountId, region)
+        //convert each id into match data
+        let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
+        return res.send(matchHistory)
+    }catch(err) {
+        //If error was a Matcherror
+        if(err.name == 'Match Error') {
+            return res.status(err.status_code).send(err)
         }
-        return foundSummoners
-
+        //Server error
+        return res.status(500).send('Internal Server Error')
     }
-    ```
+})
 
-    Which in turn calls:
-
-    ```javascript
-    function getSummoner(name, region) {
-        let url = `https://${region}.${Uri}/lol/summoner/v3/summoners/by-name/${name}`
-        let options = {
-            uri: url,
-            qs: {
-                api_key: apiKey
-            },
-            json: true
-        }
-        return rp(options)
-        .catch(err => {
-            //If user was not found return null
-            if(err.statusCode === 404) return null
-            //If error is not user was not found in region throw the error
-            throw err
-        })
+function getSummonerMatchHistoryIds(accountId, region) {
+    let url = `https://${region}.${Uri}/lol/match/v3/matchlists/by-account/${accountId}/recent`
+    let options = {
+        uri: url,
+        qs: {
+            api_key: apiKey
+        },
+        json: true
     }
-    ```
+    return rp(options)
+    .then(res => {
+        //only get the game ids
+        return res.matches.reduce((acc, curr) => {
+            acc.push(curr.gameId)
+        return acc
+        }, [])
+    })
+    .catch(err => {
+        throw new MatchError('Failed to get match history Ids from api')
+    })
+}
 
-2. **Select Summoner and Render match history**
+async function convertGameIdsToMatches(gameIds, region, accountId) {
+    let apiRequests = []
+    //Due to rate limit split array into two, and make a delayed request
+    let middle = Math.floor(gameIds.length / 2)
+    let firstHalf = gameIds.slice(0, middle)
+    let secondHalf = gameIds.slice(middle)
 
-    **2.1** After the user has selected the summoner they would like to view, we send a request to this route with the `accountId region` as query strings.
-
-    ```javascript
-        router.get('/matchlist', async (req, res) => {
-            let accountId = req.query.accountId
-            let region = Regions[req.query.region]
-
-            let gameHistoryIds = await getSummonerMatchHistoryIds(accountId, region)
-            let matchHistory = await convertGameIdsToMatches(gameHistoryIds, region, accountId)
-            return res.send(matchHistory)
-        })
-    ```
-
-    **2.2** First we get the summoners match history as ids
-
-    ```javascript
-        function getSummonerMatchHistoryIds(accountId, region) {
-            let url = `https://${region}.${Uri}/lol/match/v3/matchlists/by-account/${accountId}/recent`
-            let options = {
-                uri: url,
-                qs: {
-                    api_key: apiKey
-                },
-                json: true
-            }
-            return rp(options)
-            .then(res => {
-                //only get the game ids
-                return res.matches.reduce((acc, curr) => {
-                    acc.push(curr.gameId)
-                    return acc
-                }, [])
-            })
-        }
-    ```
-
-    **2.3** Then we convert the game ids to matches by making two batch requests of 10
-
-    ```javascript
-        async function convertGameIdsToMatches(gameIds, region, accountId) {
-            let apiRequests = []
-            //Due to rate limit split array into two, and make a delayed request
-            let middle = Math.floor(gameIds.length / 2)
-            let firstHalf = gameIds.slice(0, middle)
-            let secondHalf = gameIds.slice(middle)
-
-            //Delay function for await
-            const timeout = ms => {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        secondHalf.forEach(id => {
-                            apiRequests.push(getMatch(id, region))
-                        })
-                        resolve()
-                    }, ms)
+    //Delay function for await
+    const timeout = ms => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                secondHalf.forEach(id => {
+                    apiRequests.push(getMatch(id, region))
                 })
-            }
-
-            //First call
-            firstHalf.forEach(id => {
-                apiRequests.push(getMatch(id, region))
-            })
-
-            //Second call
-            await timeout(1000)
-
-            return Promise.all(apiRequests)
-            .then(data => {
-                return data
-            })
-        }
-    ```
-
-    **2.3** (Not implemented) In this block we map the data of match histories to include `champion spells items`
-
-    ```javascript
-
-        //function convertGameIdsToMatches
-        return Promise.all(apiRequests)
-        .then(data => {
-            return data
-            //return data.map(match => convertMatchData(match))
+                resolve()
+            }, ms)
         })
+    }
 
-        function convertMatchData(match, accountId) {
-            /*
-            participant.spell1 = findSpellById(participant.spell1Id)
-            participant.spell2 = findSpellById(participant.spell2Id)
-            participant.champion = findChampionById(participant.championId)
+    //First call
+    firstHalf.forEach(id => {
+        apiRequests.push(getMatch(id, region))
+    })
 
-            let copy = JSON.stringify(match)
-            console.log(copy.participants[participantId])
-            return copy
-            */
-            let participantId = findParticipantId(match.participantIdentities, accountId)
-            let participant = match.participants[participantId]
+    //Second call
+    await timeout(1000)
 
-            participant.spell1 = findSpellById(participant.spell1Id)
-            participant.spell2 = findSpellById(participant.spell2Id)
-            participant.champion = findChampionById(participant.championId)
+    //return data after it has been fetched
+    return Promise.all(apiRequests)
+    .then(data => {
+        //If match history array is empty throw an error
+        if(data.length === 0) throw new MatchError('No match history found')
+        //Convert the matches to include spells, items and champion
+        return data.map(match => {
+            return convertMatchData(match, accountId)
+        })
+    })
+}
 
-            return match
-        }
-    ```
+function getMatch(gameId, region) {
+    let url = `https://${region}.${Uri}/lol/match/v3/matches/${gameId}`
+    let options = {
+        uri: url,
+        qs: {
+            api_key: apiKey
+        },
+        json: true
+    }
+    return rp(options)
+    .catch(err => {
+        //Not sure why we are getting a 429 error
+    })
+}
+
+function convertMatchData(match, accountId) {
+    let participantId = findParticipantId(match.participantIdentities, accountId)
+    let participant = match.participants[participantId -1]
+
+    participant.champion = findChampionById(participant.championId)
+    participant.spell1 = findSpellById(participant.spell1Id)
+    participant.spell2 = findSpellById(participant.spell2Id)
+    participant.items = findParticipantItems(participant.stats)
+
+    return match
+}
+
+function findParticipantId(participantIdentities, accountId) {
+    return participantIdentities.find(participant => participant.player.accountId == accountId).participantId
+}
+```
 
 
 
@@ -203,6 +238,7 @@ You can find the most recent version of this guide [here](https://github.com/fac
 
 
 **Home/Landing page**
+---
 ```jsx
 import React from 'react'
 import {connect} from 'react-redux'
@@ -279,6 +315,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(Home)
 ```
 
 **SummonerList**
+---
 ```jsx
 import React from 'react'
 import {connect} from 'react-redux'
@@ -332,6 +369,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(SummonerList)
 ```
 
 **Summoner**
+---
 ```jsx
 import React from 'react'
 
@@ -347,6 +385,7 @@ export default function Summoner(props) {
 ```
 
 **match_list**
+---
 ```jsx
 import React from 'react'
 import {connect} from 'react-redux'
@@ -445,6 +484,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(MatchList)
 ```
 
 **match**
+---
 ```jsx
 import React from 'react'
 import {connect} from 'react-redux'
@@ -559,6 +599,7 @@ class Match extends React.Component {
 
 
 **LoadingScreen**
+---
 
 ```jsx
     import React from 'react'
@@ -572,8 +613,9 @@ class Match extends React.Component {
             )
         }
 ```
-
+---
 ## Folder Structure
+---
 ```
 my-app/
   README.md
