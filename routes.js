@@ -1,4 +1,3 @@
-import {apiKey} from './config'
 import rp from 'request-promise-native'
 import express from 'express'
 import path from 'path'
@@ -6,6 +5,12 @@ import {Regions, Uri} from './config'
 import Spells from './spells'
 import Champions from './champions'
 import Items from './items'
+import fs from 'fs'
+
+var apiKey = fs.readFileSync('./api_key.js', 'utf8', (err, key) => {
+    if(err) throw new Error(err)
+    return key
+})
 
 const router = express.Router()
 
@@ -33,6 +38,25 @@ class MatchError extends Error {
 /*--------------------------------
     Functions
 --------------------------------*/
+function testApiKey(key) {
+    let options = {
+        uri: 'https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/RiotSchmick',
+        qs: {
+            api_key: key
+        },
+        json: true
+    }
+
+    return rp(options)
+}
+
+function getApiKey() {
+    return fs.readFileSync('./api_key.js', 'utf8', (err, key) => {
+        if(err) return err
+        return key
+    })
+}
+
 function includeSummonerRegion(summoner, region) {
     return {
         ...summoner,
@@ -229,6 +253,7 @@ router.get('/matchlist', async (req, res) => {
     }
 })
 
+//get summoner by account id
 router.get('/account', async (req, res) => {
     let accountId = req.query.accountId
     let region = req.query.region
@@ -254,6 +279,33 @@ router.get('/account', async (req, res) => {
         //Server error
         return res.status(500).send('Internal server error')
     })
+})
+
+
+//update apiKey
+router.post('/change-api-key', async (req, res) => {
+    let newKey = req.query.key
+    //First test the current api key
+    try {
+        await testApiKey(apiKey)
+        //if error was not thrown, the current key still works
+        return res.status(503).send('The current key still works')
+    }catch(err) {
+        //Current Api key doesn't work
+        //Test the new api key
+        try {
+            await testApiKey(newKey)
+        }catch(err) {
+            //The new key did not pass the test
+            return res.status(400).send('The new key is invalid')
+        }
+
+        //if an error was not thrown change temporarily change api key
+        //once the server restarts the api key will default to the api_key.js file
+        apiKey = newKey
+        if(apiKey === newKey) return res.send('Changed key')
+        return res.status(503).send('Failed to change api key')
+    }
 })
 
 //React app

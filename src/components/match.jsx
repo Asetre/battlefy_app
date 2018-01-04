@@ -1,7 +1,5 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import axios from 'axios'
-import parseMs from 'parse-ms'
 
 function Match(props) {
     let match = props.match

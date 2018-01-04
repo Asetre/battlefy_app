@@ -18,13 +18,38 @@ a:visited {
     text-decoration: none;
 }
 /* ------------------------------------
+Change api key component
+------------------------------------ */
+.ChangeKey {
+    width: 100%;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.ChangeKey form {
+    width: 50%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
+
+.ChangeKey input {
+    font-size: 30px;
+    margin: 20px 0;
+}
+/* ------------------------------------
 Error Screen Component
 ------------------------------------ */
 .ErrorScreen {
     color: white;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    height: 100vh;
 }
 
 .ErrorScreen a {

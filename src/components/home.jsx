@@ -2,6 +2,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import * as actions from '../actions'
 import axios from 'axios'
+import {Link} from 'react-router-dom'
 
 import LoadingScreen from './loading_screen'
 
@@ -38,7 +39,7 @@ class Home extends React.Component {
 
     render() {
         let props = this.props
-        if(props.loading) return (
+        if(props.loading && !props.error) return (
             <LoadingScreen msg={props.loadingMsg} />
         )
 
@@ -46,6 +47,7 @@ class Home extends React.Component {
             <div className="Home">
                 <div className="home-container">
                     <h2>Check your match history</h2>
+                    <Link to='/change-key' style={{color: 'white'}}>Change the current api key</Link>
                     <form action="#" className="summoner-search-form" onSubmit={this.handleSummonerSearch}>
                         <input type="text" name="name" placeholder="Summoner Name"/>
                         <input type="submit" value="Search"/>
@@ -60,7 +62,8 @@ class Home extends React.Component {
 function mapStateToProps(state) {
     return  {
         loadingMsg: state.loadingMsg,
-        loading: state.loading
+        loading: state.loading,
+        error: state.errorMsg
     }
 }
 

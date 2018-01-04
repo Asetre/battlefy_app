@@ -13,6 +13,7 @@ import Home from './components/home'
 import SummonerList from './components/summoner_list'
 import MatchList from './components/match_list'
 import ErrorScreen from './components/error_screen'
+import ChangeKey from './components/change_key'
 
 class App extends Component {
   render() {
@@ -24,6 +25,7 @@ class App extends Component {
                     <Route exact path="/summoner-list" render={props => <SummonerList {...props}/>} />
                     <Route exact path="/matchlist" component={MatchList}/>
                     <Route exact path="/error" render={props => <ErrorScreen {...props}/>} />
+                    <Route exact path='/change-key' render={props => <ChangeKey {...props} />} />
                 </div>
             </Router>
         </Provider>

@@ -5,7 +5,7 @@ import {Link} from 'react-router-dom'
 function ErrorScreen(props) {
     return(
         <div className="ErrorScreen">
-            <Link to="/">Go back to safety</Link>
+            <Link to="/" style={{color: 'white'}}>Go back to safety</Link>
             <h2>{props.errorMsg}</h2>
         </div>
     )
